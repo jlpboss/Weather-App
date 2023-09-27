@@ -42,3 +42,5 @@ let renderer = {
         renderer.setAtrubute(id, "alt", altText)
     }
 };
+
+
