@@ -43,4 +43,19 @@ let renderer = {
     }
 };
 
+let weatherAPI = {
+    
+    apitest: function(){
+        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?zip={40508},{1}&appid={34673af0c28d949d581b71e45eea6444}';
 
+        axios.get(apiUrl)
+        .then(response => {
+            console.log('Data:', response.data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+weatherAPI.apitest();
