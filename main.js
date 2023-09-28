@@ -50,58 +50,22 @@ let renderer = {
     }
 };
 
-let weatherAPI = {
+class WeatherAPI {
 
-    apiKey: "34673af0c28d949d581b71e45eea6444",
+    constructor (){
+        this.apiKey = "34673af0c28d949d581b71e45eea6444";
+        this.weather = {};
+        this.getWeatherDataFromGPS();
+    }
 
-    weather: {},
+    async getWeatherDataFromGPS (){
+        let x = geolocationClassObj.getLocation();
+        console.log("a")
+        console.log(x)
 
-    userLon: 0,
+        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + x[0] + '&lon=' + x[1] + '&appid=' + this.apiKey;
 
-    userLat: 0,
-
-    getWeatherDataFromGPS: async function (latanlon) {
-        if (latanlon[1]){
-        console.log(latanlon[0])
-        console.log(latanlon[1])
-        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + latanlon[0] + '&lon=' + latanlon[1] + '&appid=' + this.apiKey;
-
-        axios.get(apiUrl)
-            .then(response => {
-                this.weather = response.data;
-                console.log(this.weather);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    },
-    getLocation: async function () {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                // weatherAPI.userLat = position.coords.latitude;
-                // weatherAPI.userLon = position.coords.longitude;
-                
-                console.log(position.coords.latitude);
-                console.log(position.coords.longitude);
-                
-                return [position.coords.latitude, position.coords.longitude]
-
-                
-
-                // console.log(weatherAPI.userLat)
-                // console.log(weatherAPI.userLon)
-            }, function (error) {
-                console.error("Error getting location: " + error.message);
-            });
-        } else {
-            console.error("Geolocation is not available in this browser.");
-        }
-    },
-    getWeatherDataFromZipCode: async function (zipCode) {
-
-        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?zip=' + zipCode + '&appid=' + this.apiKey;
-        axios.get(apiUrl)
+        await axios.get(apiUrl)
             .then(response => {
                 this.weather = response.data;
                 console.log(this.weather);
@@ -110,6 +74,43 @@ let weatherAPI = {
                 console.error('Error:', error);
             });
     }
+
+}
+
+class geolocationClass {
+    constructor (){
+        latitude = 0;
+        longitude = 0;
+        this.getLocation();
+    }
+
+    getLocation (){
+        if ("geolocation" in navigator) {
+            let nav = navigator.geolocation;
+            let data = nav.getCurrentPosition(async function (position) {
+                // weatherAPI.userLat = position.coords.latitude;
+                // weatherAPI.userLon = position.coords.longitude;
+                
+                console.log(position.coords.latitude);
+                console.log(position.coords.longitude);
+
+                this.latitude = position.coords.latitude;
+                this.longitude = position.coords.longitude;
+                
+                return [position.coords.latitude, position.coords.longitude];
+
+                // console.log(weatherAPI.userLat)
+                // console.log(weatherAPI.userLon)
+            }, function (error) {
+                console.error("Error getting location: " + error.message);
+            });
+            return data;
+        } else {
+            console.error("Geolocation is not available in this browser.");
+            return null;
+        }
+    }
+
 }
 
 let weatherCard = {
@@ -121,10 +122,13 @@ let weatherCard = {
     }
 }
 
+let geolocationClassObj = new geolocationClass();
+
+let weatherAPI = new WeatherAPI();
 // weatherAPI.getLocation().then()
 //weatherAPI.getWeatherDataFromGPS(res)
 //async function test() {}
-weatherAPI.getWeatherDataFromGPS(await weatherAPI.getLocation());
+//weatherAPI.getWeatherDataFromGPS();
 
 // setTimeout(() => {
 //     weatherCard.makeCard("div1");
