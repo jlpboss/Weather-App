@@ -17,7 +17,7 @@ let renderer = {
         let node = document.createTextNode(text);
         let out = document.getElementById(where);
         out.appendChild(node);
-  
+
     },
     makeEvent: function (listening, event, funct, param = "()") {
         let element = document.getElementById(listening);
@@ -61,37 +61,36 @@ let weatherAPI = {
     userLat: 0,
 
     getWeatherDataFromGPS: async function () {
-        await this.getLocation()
-        
-        setTimeout(() => {
-            console.log(weatherAPI.userLat)
-            console.log(weatherAPI.userLon)
-            const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + this.userLat + '&lon=' + this.userLon + '&appid=' + this.apiKey;
+        let [lat, lon] = await this.getLocation()
 
-            axios.get(apiUrl)
-                .then(response => {
-                    this.weather = response.data;
-                    console.log(this.weather);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }, "1000");
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}`;
+
+        axios.get(apiUrl)
+            .then(response => {
+                this.weather = response.data;
+                console.log(this.weather);
+                weatherCard.makeCard("div1");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     },
     getLocation: async function () {
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                weatherAPI.userLat = position.coords.latitude;
-                weatherAPI.userLon = position.coords.longitude;
-
-                console.log(position.coords.latitude);
-                console.log(position.coords.longitude);
-
-                console.log(weatherAPI.userLat)
-                console.log(weatherAPI.userLon)
-            }, function (error) {
-                console.error("Error getting location: " + error.message);
-            });
+            return new Promise(
+                (resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            console.log(position.coords.latitude);
+                            console.log(position.coords.longitude);
+                            resolve([position.coords.latitude, position.coords.longitude])
+                        }, function (error) {
+                            let errorMessage = `Error getting location: ${error.message}`
+                            console.error(errorMessage);
+                            reject(errorMessage)
+                        })
+                }
+            );
         } else {
             console.error("Geolocation is not available in this browser.");
         }
@@ -120,7 +119,3 @@ let weatherCard = {
 }
 
 weatherAPI.getWeatherDataFromGPS();
-
-setTimeout(() => {
-    weatherCard.makeCard("div1");
-}, "2000");
