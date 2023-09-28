@@ -51,21 +51,17 @@ let renderer = {
 };
 
 class WeatherAPI {
-
-    constructor (){
+    constructor() {
         this.apiKey = "34673af0c28d949d581b71e45eea6444";
         this.weather = {};
-        this.getWeatherDataFromGPS();
-    }
 
-    async getWeatherDataFromGPS (){
-        let x = geolocationClassObj.getLocation();
+    }
+    async getWeatherDataFromGPS(x) {
+        // let x = geolocationClassObj.getLocation();
         console.log("a")
         console.log(x)
-
-        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + x[0] + '&lon=' + x[1] + '&appid=' + this.apiKey;
-
-        await axios.get(apiUrl)
+        // const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + x[0] + '&lon=' + x[1] + '&appid=34673af0c28d949d581b71e45eea6444';
+        await axios.get(x)
             .then(response => {
                 this.weather = response.data;
                 console.log(this.weather);
@@ -74,45 +70,38 @@ class WeatherAPI {
                 console.error('Error:', error);
             });
     }
-
 }
-
 class geolocationClass {
-    constructor (){
-        latitude = 0;
-        longitude = 0;
+    constructor() {
+        this.latitude = 0;
+        this.longitude = 0;
         this.getLocation();
+        this.y = "";
+    }
+    async getLocation() {
+        let y;
+        let nav = navigator.geolocation;
+        nav.getCurrentPosition(this.makeURL(position));
+        console.log('url:', this.y);
+        return this.y;
     }
 
-    getLocation (){
-        if ("geolocation" in navigator) {
-            let nav = navigator.geolocation;
-            let data = nav.getCurrentPosition(async function (position) {
-                // weatherAPI.userLat = position.coords.latitude;
-                // weatherAPI.userLon = position.coords.longitude;
-                
-                console.log(position.coords.latitude);
-                console.log(position.coords.longitude);
+    async makeURL(position) {
+        // weatherAPI.userLat = position.coords.latitude;
+        // weatherAPI.userLon = position.coords.longitude;
 
-                this.latitude = position.coords.latitude;
-                this.longitude = position.coords.longitude;
-                
-                return [position.coords.latitude, position.coords.longitude];
+        console.log('lat:', position.coords.latitude);
+        console.log('lon:', position.coords.longitude);
+        // this.latitude = position.coords.latitude;
+        // this.longitude = position.coords.longitude;
 
-                // console.log(weatherAPI.userLat)
-                // console.log(weatherAPI.userLon)
-            }, function (error) {
-                console.error("Error getting location: " + error.message);
-            });
-            return data;
-        } else {
-            console.error("Geolocation is not available in this browser.");
-            return null;
-        }
+        // return [position.coords.latitude, position.coords.longitude];
+        this.y = `https://api.openweathermap.org/data/2.5/weather?lat=${position.coords.latitude}&lon=${position.coords.longitude}&appid=34673af0c28d949d581b71e45eea6444`;
+        console.log(y)
+        // console.log(weatherAPI.userLat)
+        // console.log(weatherAPI.userLon)
     }
-
 }
-
 let weatherCard = {
     makeCard: function (where) {
         renderer.makeTag("div", "weatherCard", where, "card text-center h5 cardStuff")
@@ -121,15 +110,13 @@ let weatherCard = {
         renderer.drawContentBox("weatherCard", "cond", "Condition:", 1, [weatherAPI.weather.weather[0].description])
     }
 }
-
 let geolocationClassObj = new geolocationClass();
-
 let weatherAPI = new WeatherAPI();
+weatherAPI.getWeatherDataFromGPS(geolocationClassObj.getLocation());
 // weatherAPI.getLocation().then()
 //weatherAPI.getWeatherDataFromGPS(res)
 //async function test() {}
 //weatherAPI.getWeatherDataFromGPS();
-
 // setTimeout(() => {
 //     weatherCard.makeCard("div1");
 // }, "2000");
