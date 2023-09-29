@@ -17,7 +17,7 @@ let renderer = {
         let node = document.createTextNode(text);
         let out = document.getElementById(where);
         out.appendChild(node);
-  
+
     },
     makeEvent: function (listening, event, funct, param = "()") {
         let element = document.getElementById(listening);
@@ -39,88 +39,134 @@ let renderer = {
         renderer.setAtrubute(id, "src", imgLink)
         renderer.setAtrubute(id, "alt", altText)
     },
-    drawContentBox: function (where, id, headText, numberofSubBoxes, SubBoxTextArray){
+    drawContentBox: function (where, id, headText, numberofSubBoxes, SubBoxTextArray) {
         this.makeContainer(id, where, "container", "row ", "col")
         this.drawText(headText, id + "Col")
         this.makeTag("div", id + "Row2", id + "Cont", "row")
-        for(let i = 0; i < numberofSubBoxes; i++){
-            this.makeTag("div", id + "Col" + i, id + "Row2", "col-" + (12/numberofSubBoxes))
+        for (let i = 0; i < numberofSubBoxes; i++) {
+            this.makeTag("div", id + "Col" + i, id + "Row2", "col-" + (12 / numberofSubBoxes))
             this.drawText(SubBoxTextArray[i], id + "Col" + i)
         }
     }
 };
 
 let weatherAPI = {
-
     apiKey: "34673af0c28d949d581b71e45eea6444",
-
+  
     weather: {},
-
+  
     userLon: 0,
-
+  
     userLat: 0,
-
-    getWeatherDataFromGPS: async function () {
-        await this.getLocation()
-        
-        setTimeout(() => {
-            console.log(weatherAPI.userLat)
-            console.log(weatherAPI.userLon)
-            const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + this.userLat + '&lon=' + this.userLon + '&appid=' + this.apiKey;
-
-            axios.get(apiUrl)
-                .then(response => {
-                    this.weather = response.data;
-                    console.log(this.weather);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }, "1000");
+  
+    getWeatherDataFromGPS: async function (whereToMakeCard) {
+      let [lat, lon] = await this.getLocation();
+      console.log({ lat, lon });
+      const apiUrl =
+        "https://api.openweathermap.org/data/2.5/weather?lat=" +
+        lat +
+        "&lon=" +
+        lon +
+        "&appid=" +
+        this.apiKey;
+  
+      axios
+        .get(apiUrl)
+        .then((response) => {
+          this.weather = response.data;
+          console.log(this.weather);
+          weatherCard.makeCard(whereToMakeCard);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     },
     getLocation: async function () {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                weatherAPI.userLat = position.coords.latitude;
-                weatherAPI.userLon = position.coords.longitude;
-
-                console.log(position.coords.latitude);
-                console.log(position.coords.longitude);
-
-                console.log(weatherAPI.userLat)
-                console.log(weatherAPI.userLon)
-            }, function (error) {
-                console.error("Error getting location: " + error.message);
-            });
-        } else {
-            console.error("Geolocation is not available in this browser.");
-        }
-    },
-    getWeatherDataFromZipCode: async function (zipCode) {
-
-        const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?zip=' + zipCode + '&appid=' + this.apiKey;
-        axios.get(apiUrl)
-            .then(response => {
-                this.weather = response.data;
-                console.log(this.weather);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+      // let lat, lon;
+      if ("geolocation" in navigator) {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              console.log(position.coords.latitude);
+              console.log(position.coords.longitude);
+              //   lat = position.coords.latitude;
+              //   lon = position.coords.longitude;
+              resolve([position.coords.latitude, position.coords.longitude]);
+            },
+            function (error) {
+              console.error("Error getting location: " + error.message);
+              reject("Error getting location: " + error.message);
+            }
+          );
+        });
+  
+        //   return [lat, lon];
+      } else {
+        console.error("Geolocation is not available in this browser.");
+      }
     }
-}
-
+  };
 let weatherCard = {
-    makeCard: function(where){
-        renderer.makeTag("div", "weatherCard", where, "card text-center h5 cardStuff")
+    makeCard: function (where) {
+        renderer.makeTag("div", "weatherCard", where, "card text-center h5 cardStuff border border-success rounded")
         renderer.drawContentBox("weatherCard", "city", "City:", 1, [weatherAPI.weather.name])
-        renderer.drawContentBox("weatherCard", "temp", "Temperature:", 2, [(weatherAPI.weather.main.temp - 273.15).toFixed(2) + " Degrees Celsius",((weatherAPI.weather.main.temp - 273.15) * 9/5 + 32).toFixed(2) + " Degrees Fahrenheit"])
-        renderer.drawContentBox("weatherCard", "cond", "Condition:", 1, [weatherAPI.weather.weather[0].description])
+        renderer.drawContentBox("weatherCard", "temp", "Temperature:", 2, [(weatherAPI.weather.main.temp - 273.15).toFixed(2) + " Degrees Celsius", ((weatherAPI.weather.main.temp - 273.15) * 9 / 5 + 32).toFixed(2) + " Degrees Fahrenheit"])
+        renderer.drawContentBox("weatherCard", "cond", "Condition:", 1, [toUppercaseWords(weatherAPI.weather.weather[0].description)])
+    },
+    makeTestCard: function(id, where){
+        renderer.makeTag("div", id, where, "card text-center h5 cardStuff border border-danger rounded")
+
+        renderer.makeTag("div", id + "Body", id, "card-body")
+        renderer.makeTag("h5", id + "Title", id + "Body", "card-title")
+        renderer.drawText("Card title", id + "Title")
+
+        renderer.makeTag("h6", id + "Subtitle", id + "Body", "card-subtitle mb-2")
+        renderer.drawText("Card subtitle", id + "Subtitle")
+
+        renderer.makeTag("p", id + "Text", id + "Body", "card-subtitle mb-2")
+        renderer.drawText("Some quick example text to build on the card title and make up the bulk of the card's content.", id + "Text")
     }
 }
 
-weatherAPI.getWeatherDataFromGPS();
+function toUppercaseWords(str){
+  
+    let words =[];
+    let out = "";
+    let chr = "";
+  
 
-setTimeout(() => {
-    weatherCard.makeCard("div1");
-}, "2000");
+    if (str.includes(" ")){
+      words = str.split(" ");
+    }else{
+      words.push(str);
+    }
+  
+    // for item in words
+    for (item in words){
+    //  if index of item != 0
+      if (item != -1){
+    //    item = item replace index 0 with inxex 0 uppercase
+        chr = words[item].charAt(0);
+        chr = chr.toUpperCase();
+        words[item] = chr + words[item].substring(1, words[item].length);
+      }
+    }
+    // for item in words
+    for (item in words){
+    //  out concattanate item
+      out = out + words[item] + " ";
+    }
+    // return out
+    return out;
+}
+renderer.makeContainer("main", "div1", "container", "row  d-flex justify-content-center", "col-12 md-col-6")
+
+renderer.makeTag("div", "mainCol2", "mainRow", "col-12 md-col-6")
+renderer.makeTag("div", "mainCol3", "mainRow", "col-12 md-col-6")
+renderer.makeTag("div", "mainCol4", "mainRow", "col-12 md-col-6")
+
+weatherCard.makeTestCard("testCard1", "mainCol")
+weatherCard.makeTestCard("testCard2", "mainCol2")
+weatherCard.makeTestCard("testCard3", "mainCol3")
+weatherAPI.getWeatherDataFromGPS("mainCol4");
+
