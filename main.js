@@ -111,7 +111,7 @@ let weatherCard = {
         renderer.makeTag("div", "weatherCard", where, "card text-center h5 cardStuff border border-success rounded")
         renderer.drawContentBox("weatherCard", "city", "City:", 1, [weatherAPI.weather.name])
         renderer.drawContentBox("weatherCard", "temp", "Temperature:", 2, [(weatherAPI.weather.main.temp - 273.15).toFixed(2) + " Degrees Celsius", ((weatherAPI.weather.main.temp - 273.15) * 9 / 5 + 32).toFixed(2) + " Degrees Fahrenheit"])
-        renderer.drawContentBox("weatherCard", "cond", "Condition:", 1, [weatherAPI.weather.weather[0].description])
+        renderer.drawContentBox("weatherCard", "cond", "Condition:", 1, [toUppercaseWords(weatherAPI.weather.weather[0].description)])
     },
     makeTestCard: function(id, where){
         renderer.makeTag("div", id, where, "card text-center h5 cardStuff border border-danger rounded")
@@ -128,6 +128,37 @@ let weatherCard = {
     }
 }
 
+function toUppercaseWords(str){
+  
+    let words =[];
+    let out = "";
+    let chr = "";
+  
+
+    if (str.includes(" ")){
+      words = str.split(" ");
+    }else{
+      words.push(str);
+    }
+  
+    // for item in words
+    for (item in words){
+    //  if index of item != 0
+      if (item != -1){
+    //    item = item replace index 0 with inxex 0 uppercase
+        chr = words[item].charAt(0);
+        chr = chr.toUpperCase();
+        words[item] = chr + words[item].substring(1, words[item].length);
+      }
+    }
+    // for item in words
+    for (item in words){
+    //  out concattanate item
+      out = out + words[item] + " ";
+    }
+    // return out
+    return out;
+}
 renderer.makeContainer("main", "div1", "container", "row  d-flex justify-content-center", "col-12 md-col-6")
 
 renderer.makeTag("div", "mainCol2", "mainRow", "col-12 md-col-6")
